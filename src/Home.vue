@@ -4,19 +4,51 @@
         <h1>Andy's Auction App!</h1>
         <h2>Navigation</h2>
         <br/>
-        <router-link :to="{ name: 'auctions'}">Auctions</router-link>
+        <router-link :to="{ name: 'auctions', params: { userId: loggedInUserId }}">Auctions</router-link>
         <br/><br/>
         <div v-if="loggedInUserId === ''">
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginUserModal">Login</button>
         </div>
         <div v-if="loggedInUserId !== ''">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editUserModal">Edit Current User</button>
             <button type="button" class="btn btn-primary" v-on:click="logoutUser()">Logout</button>
+            <br/><br/>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#viewUserModal">View User Info</button>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editUserModal">Edit Current User</button>
         </div>
         <br/>
         {{ loginString }}
         <br/><br/>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Register as New User</button>
+
+        <div class="modal fade" id="viewUserModal" tabindex="-1" role="dialog" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="viewUserModalLabel">View Current User</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <h4>Details</h4>
+                        <b>Username:</b> {{ this.loggedInUser.username }}
+                        <br/>
+                        <b>Given Name:</b> {{ this.loggedInUser.givenName }}
+                        <br/>
+                        <b>Family Name:</b> {{ this.loggedInUser.familyName }}
+                        <br/>
+                        <b>Email:</b> {{ this.loggedInUser.email }}
+                        <br/>
+                        <b>Account Balance:</b> ${{ this.loggedInUser.accountBalance }}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -29,17 +61,9 @@
                     </div>
                     <div class="modal-body">
                         <form>
-                            <b>Given Name</b>: <input v-model="updateGivenName" placeholder="givenName" type="text"/>
+                            <b>Given Name</b>: <input id="updateGivenNameInput" v-model="updateGivenName" type="text"/>
                             <br/>
-                            <b>Family Name</b>: <input v-model="updateFamilyName" placeholder="family name" type="text"/>
-                            <br/>
-                            <b>Username</b>: <input v-model="updateUsername" placeholder="username" type="text"/>
-                            <br/>
-                            <b>Email</b>: <input v-model="updateEmail" placeholder="email" type="email"/>
-                            <br/>
-                            <b>Password</b>: <input v-model="updatePassword" placeholder="password" type="password"/>
-                            <br/>
-                            <b>Confirm Password</b>: <input v-model="updateConfirmPassword" placeholder="confirm password" type="password"/>
+                            <b>Family Name</b>: <input id="updateFamilyNameInput" v-model="updateFamilyName"  type="text"/>
                         </form>
                         <div v-if="updateInvalidInput">
                             <font color="red">* {{ this.updateInvalidString }}</font>
@@ -174,44 +198,52 @@
                 invalidLoginInput: false,
                 invalidLoginString: "",
 
+                //Variables for the "logged in user" label
                 loggedInUserId: "",
                 loginString: "",
+                loggedInUser: "",
 
                 //Update User Variables
-                updateUsername: "",
-                updatePassword: "",
-                updateConfirmPassword: "",
-                updateEmail: "",
                 updateGivenName: "",
                 updateFamilyName: "",
                 updateInvalidInput: false,
-                updateInvalidString: "",
-
+                updateInvalidString: ""
+                
             }
         },
         mounted: function() {
             this.loginString = "No user is currently logged in."
             if(localStorage.getItem("token") !== "") {
-                //UNSURE HOW TO DO THIS
+                console.log("USER IS LOGGED IN ALREADY - NEED TO FIX");
             }
+
 
         },
         methods: {
-            getLoggedInUser: function() {
-
-
-            },
-
             updateUser: function() {
-                //ADD in checks
-                if(1) {
-
+                if(this.updateGivenName === "" && this.updateFamilyName === "") {
+                    this.updateInvalidInput = true;
+                    this.updateInvalidString = "No information entered to update!";
                 } else {
-                    $('#updateUserModal').modal('hide');
-                    this.$http.patch('http://localhost:4941/api/v1/users/' + loggedInUserId, {
+                    var updateJSON = {};
+                    if(this.updateGivenName !== "") {
+                    updateJSON["givenName"] = this.updateGivenName;
+                    }
+                    if(this.updateFamilyName !== "") {
+                        updateJSON["familyName"] = this.updateFamilyName;
+                    }
+                    $('#editUserModal').modal('hide');
+                    this.$http.patch('http://localhost:4941/api/v1/users/' + this.loggedInUserId, updateJSON, 
+                    {headers: {'X-Authorization': localStorage.getItem("token")}})
+                    .then(function(response) {
+                        console.log(response);
+                        this.loggedInUser.givenName = this.updateGivenName;
+                        this.loggedInUser.familyName = this.updateFamilyName; 
+                        document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
+                        document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
+                        this.updateGivenName = "";
+                        this.updateFamilyName = "";
 
-                    })
-                    .then(function(result) {
 
                     });
                 }
@@ -246,6 +278,14 @@
                         this.loginEmail = "";
                         this.invalidLoginString = "";
 
+                        this.$http.get('http://localhost:4941/api/v1/users/' + response.body.id, 
+                        {headers: {'X-Authorization': localStorage.getItem("token")}})
+                        .then(function(response) {
+                            this.loggedInUser = response.body;
+                            document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
+                            document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
+                        })
+
                     });
 
 
@@ -263,11 +303,6 @@
                     localStorage.removeItem("token");
                 });
             },
-
-            loginUserAfterCreated: function() {
-
-            },
-
 
             addNewUser: function() {
                 if(this.username === "") {
@@ -295,7 +330,7 @@
                      this.invalidInput = true;
                      this.invalidString = "Please enter a valid email!";
                  } else {
-                    $('#addUserModal').modal('hide');
+                    
                     this.$http.post('http://localhost:4941/api/v1/users', {
                             "username": this.username,
                             "givenName": this.givenName,
@@ -304,29 +339,42 @@
                             "password": this.password
                     })
                     .then(function(response) {
-                        console.log(response);
-                        this.givenName = "";
-                        this.familyName = "";
-                        this.confirmPassword = "";
-                        this.invalidString = "";
-                        this.loginUserAfterCreated();
+                        //Check for error returned by the server for duplicates
+                            this.givenName = "";
+                            this.familyName = "";
+                            this.confirmPassword = "";
+                            this.invalidString = "";
+                        
+                    }, function(err) {
+                        console.log(err);
+                        this.invalidInput = true;
+                        this.invalidString = "The username-email combination you have entered is already taken!";
                     })
                     .then(function(response) {
-                        this.$http.post('http://localhost:4941/api/v1/users/login', {
+                        if(!this.invalidInput) {
+                            $('#addUserModal').modal('hide');
+                            this.$http.post('http://localhost:4941/api/v1/users/login', {
                             "username": this.username,
                             "email": this.email,
                             "password": this.password
-                    })
-                    .then(function(response) {
-                        console.log(response);
-                        localStorage.setItem("token", response.body.token);
-                        this.loggedInUserId = response.body.id;
-                        this.loginString = "Currently logged in as username: " + this.username + " with id: " + this.loggedInUserId;
-                        this.username = "";
-                        this.email = "";
-                        this.password = "";
+                        })
+                        .then(function(response) {
+                            console.log(response);
+                            localStorage.setItem("token", response.body.token);
+                            this.loggedInUserId = response.body.id;
+                            this.loginString = "Currently logged in as username: " + this.username + " with id: " + this.loggedInUserId;
+                            this.username = "";
+                            this.email = "";
+                            this.password = "";
+                            this.$http.get('http://localhost:4941/api/v1/users/' + response.body.id, 
+                            {headers: {'X-Authorization': localStorage.getItem("token")}})
+                            .then(function(response) {
+                                this.loggedInUser = response.body;
+                            })
 
-                    });
+                        });
+                        }
+
                     });
                 }
             }

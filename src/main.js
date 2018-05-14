@@ -21,22 +21,14 @@ const routes = [
   {
     path: "/auctions",
     name: "auctions",
+    props: true,
     component: Auctions
   },
   {
     path: "/auctions/:auctionId",
     name: "auction",
+    props: true,
     component: Auctions
-  },
-  {
-    path: "/users/:userId",
-    name: "user",
-    component: Users
-  },
-  {
-    path: "/users",
-    name: "users",
-    component: Users
   }
 ];
 
