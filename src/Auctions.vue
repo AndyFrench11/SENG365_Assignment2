@@ -19,7 +19,8 @@
                 <b>Start Date Time: </b>{{ new Date(parseInt(currentAuction.startDateTime)).toLocaleString()  }}
                 <br/>
                 <b>End Date Time: </b>{{ new Date(parseInt(currentAuction.endDateTime)).toLocaleString() }}
-                <br/>
+                <h4>Starting Price: ${{ currentAuction.startingBid }}</h4>
+                <h4>Reserve Price: ${{ currentAuction.reservePrice }}</h4>
                 <h4>Current Bid: ${{ currentAuction.currentBid }}</h4>
                 <h4><u>Bid History</u></h4>
 
@@ -50,7 +51,7 @@
                     </div>
                 </table>
                 <br/>
-                <div v-if="$route.params.userId !== currentAuction.seller.id">
+                <div v-if="loggedInUserId != currentAuction.seller.id">
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#makeBidModal"> Make a Bid</button>
                 </div>
                 
@@ -62,7 +63,7 @@
                 <b>Family Name: </b>{{ seller.familyName }}
                 <br/><br/>
 
-                <div v-if="$route.params.userId === currentAuction.seller.id">
+                <div v-if="(loggedInUserId == currentAuction.seller.id) && (currentAuction.bids.length == 0)">
                     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editAuctionModal">Edit Auction</button>
                 </div>
                 <br/><br/>
@@ -74,14 +75,14 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="makeBidModalLabel">Make A Bid</h5>
+                            <h4 class="modal-title" id="makeBidModalLabel">Make A Bid</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
                         <div class="modal-body">
                             <form>
-                                <font color="red">*</font><b>Enter bid amount: $</b><input v-model="bidAmount" placeholder="title" type="number"/>
+                                <font color="red">*</font><b>Enter bid amount: $</b> <input v-model="bidAmount" placeholder="0" type="number"/>
                                 <br/>
                             </form>
                             <div v-if="invalidBidCreationInput">
@@ -89,7 +90,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="addBid($route.params.auctionId, $route.params.userId)">
+                            <button type="button" class="btn btn-primary" v-on:click="addBid($route.params.auctionId, $route.params.userId)">
                                 Add Bid
                             </button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -104,7 +105,7 @@
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="editAuctionModalLabel">Edit Auction</h5>
+                            <h4 class="modal-title" id="editAuctionModalLabel">Edit Auction</h4>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -112,12 +113,12 @@
                         <div class="modal-body">
                             <form>
                                 <h2>Details</h2>
-                                <b>Title:</b> <input v-model="title" placeholder="title" type="text"/>
+                                <b>Title:</b> <input id="updateTitleInput" v-model="updateTitle" type="text"/>
                                 <br/>
-                                <b>Description:</b> <input v-model="description" placeholder="descripton" type="text"/>
+                                <b>Description:</b> <input id="updateDescriptionInput" v-model="updateDescription" type="text"/>
                                 <br/>
                                 <b>Category: </b>
-                                <select id="newAuctionCategorySelect">
+                                <select id="updateAuctionCategorySelect">
                                     <option value="1">Apparel</option>
                                     <option value="2">Equipment</option>
                                     <option value="3">Vehicles</option>
@@ -127,23 +128,29 @@
                                 <br/>
                                 <h2>Time</h2>
                                 <br/>
-                                <b>Start Date Time:</b> <input id="startDateTimePicker" value="startDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
+                                <b>Start Date Time:</b> <input id="updateStartDateTimePicker" value="updateStartDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
                                 <span class="validity"></span>
                                 <br/>
-                                <b>End Date Time:</b> <input id="endDateTimePicker" value="endDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
+                                <b>End Date Time:</b> <input id="updateEndDateTimePicker" value="updateEndDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
                                 <span class="validity"></span>
                                 <br/>
                                 <h2>Bidding Information</h2>
-                                <b>Reserve Price:</b> <input v-model="reservePrice" placeholder="$0" type="text"/>
+                                <b>Reserve Price:</b> $<input id="updateReservePriceInput" v-model.number="updateReservePrice" placeholder="0" type="number" required/>
                                 <br/>
-                                <b>Starting Bid:</b> <input v-model="startingBid" placeholder="$0" type="text"/>
+                                <b>Starting Bid:</b> $<input id="updateStartingBidInput" v-model.number="updateStartingBid" placeholder="0" type="number" required/>
+                                <h2>Photo</h2>
+                                Choose photo to upload: 
+                                <input id="updatePhotoUploadFile" name="photoUploadFile" type="file" style="float:right" accept=".jpg, .jpeg, .png">
+                                <div id="updateUploadAuctionPhotoDiv">
+                                    
+                                </div>
                             </form>
-                            <div v-if="invalidCreationInput">
-                                <font color="red">* {{ this.invalidCreationString }}</font>
+                            <div v-if="invalidUpdateInput">
+                                <font color="red">* {{ this.invalidUpdateString }}</font>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal" v-on:click="editAuction($route.params.auctionId)">
+                            <button type="button" class="btn btn-primary" v-on:click="editAuction($route.params.auctionId)">
                                 Edit Auction
                             </button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -175,6 +182,18 @@
             </select>
             <button type="button" v-on:click="filterAuctionsByCategory()">Go!</button>
             <br/><br/>
+            <form>
+                <table align = "center">
+                    <tr>
+                        <td><input type="button" value="Auctions I Won" v-on:click="searchAuctions(auctionsIWon)"></td>
+                        <td><input type="button" value="Auctions I Have Bid On" v-on:click="searchAuctions(auctionsIHaveBidOn)"></td>
+                        <td><input type="button" value="My Auctions Yet To Complete" v-on:click="searchAuctions(myAuctionsYetToComplete)"></td>
+                        <td><input type="button" value="My Finished Won Auctions " v-on:click="searchAuctions(myFinishedWonAuctions)"></td>
+                        <td><input type="button" value="My Finished Non-Won Auctions" v-on:click="searchAuctions(myFinishedNonWonAuctions)"></td>
+                    </tr>
+                </table>
+            </form>
+            <br/>
             <div id="users">
                 <table align="center">
                     <tr v-for="auction in auctions">
@@ -199,11 +218,11 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form>
+                            <form id="createAuctionForm">
                                 <h2>Details</h2>
-                                <font color="red">*</font><b>Title:</b> <input v-model="title" placeholder="title" type="text"/>
+                                <font color="red">*</font><b>Title:</b> <input v-model="title" placeholder="title" type="text" required/>
                                 <br/>
-                                <font color="red">*</font><b>Description:</b> <input v-model="description" placeholder="descripton" type="text"/>
+                                <font color="red">*</font><b>Description:</b> <input v-model="description" placeholder="descripton" type="text" required/>
                                 <br/>
                                 <font color="red">*</font><b>Category: </b>
                                 <select id="newAuctionCategorySelect">
@@ -223,9 +242,9 @@
                                 <span class="validity"></span>
                                 <br/>
                                 <h2>Bidding Information</h2>
-                                <font color="red">*</font><b>Reserve Price:</b> $<input v-model.number="reservePrice" placeholder="0" type="number"/>
+                                <font color="red">*</font><b>Reserve Price:</b> $<input v-model.number="reservePrice" placeholder="0" type="number" required/>
                                 <br/>
-                                <font color="red">*</font><b>Starting Bid:</b> $<input v-model.number="startingBid" placeholder="0" type="number"/>
+                                <font color="red">*</font><b>Starting Bid:</b> $<input v-model.number="startingBid" placeholder="0" type="number" required/>
                                 <h2>Photo</h2>
                                 Choose photo to upload: 
                                 <input id="photoUploadFile" name="photoUploadFile" type="file" style="float:right" accept=".jpg, .jpeg, .png">
@@ -238,7 +257,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" v-on:click="createAuction()">
+                            <button type="button" class="btn btn-primary" form="createAuctionForm" v-on:click="createAuction()" >
                                 Create New Auction
                             </button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -276,6 +295,18 @@
                 endDateTime: "",
                 reservePrice: "",
                 startingBid: "",
+                createdAuctionId: "",
+
+                //Update Auction Fields
+                invalidUpdateInput: "",
+                invalidUpdateString: "",
+                updateTitle: "",
+                updateDescription: "",
+                updateCreateCategorySelected: "",
+                updateStartDateTime: "",
+                updateEndDateTime: "",
+                updateReservePrice: "",
+                updateStartingBid: "",
 
                 //Get Single Auction Fields
                 currentAuction: "",
@@ -288,31 +319,72 @@
 
                 //Auction Fields
                 seller: "",
-                photoUrl: ""
+                photoUrl: "",
+                loggedInUserId: "",
+
+                //Auction Search Query Fields
+                auctionsIWon: "",
+                auctionsIHaveBidOn: "",
+                myAuctionsYetToComplete: "",
+                myFinishedWonAuctions: "",
+                myFinishedNonWonAuctions: ""
+
                 
             }
         },
         mounted: function() {
-            console.log(this.$route.params.userId);
+            
             this.getAuctions();
             this.photoUrl = this.getAuctionPhotoURL(1);
             if(this.$route.params.auctionId){
+                this.loggedInUserId = parseInt(localStorage.getItem("user_id"));
                 this.getSingleAuction(this.$route.params.auctionId);
+                document.getElementById("updatePhotoUploadFile").addEventListener('change', this.updateAuctionEditImageDisplay);
+
+            } else {
+                this.auctionsIWon = "winner=" + parseInt(localStorage.getItem("user_id")) + "&status=won";
+                this.auctionsIHaveBidOn = "bidder=" + parseInt(localStorage.getItem("user_id")) + "&status=active";
+                this.myAuctionsYetToComplete = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=active";
+                this.myFinishedWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=won";
+                this.myFinishedNonWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=expired";
+                document.getElementById("photoUploadFile").addEventListener('change', this.updateImageDisplay);
+                
             }
 
-            document.getElementById("photoUploadFile").addEventListener('change', this.updateImageDisplay);
 
 
         },
         methods: {
             addBid: function(auctionId, userId) {
+                if(this.bidAmount === "") {
+                    this.invalidBidCreationInput = true;
+                    this.invalidBidCreationString = "Please enter a bid amount!";
+                } else if(this.bidAmount == 0) {
+                    this.invalidBidCreationInput = true;
+                    this.invalidBidCreationString = "Please enter a valid bid amount!";
+                } else if(this.bidAmount < 0) {
+                    this.invalidBidCreationInput = true;
+                    this.invalidBidCreationString = "Please enter a bid amount greater than zero!";
+                } else {
+                    this.$http.post('http://localhost:4941/api/v1/auctions/' + auctionId + '/bids?amount=' + this.bidAmount, 
+                    {},
+                    {headers: {'X-Authorization': localStorage.getItem("token")}})
+                    .then(function(response) {
+                        
+                        this.getSingleAuction(this.$route.params.auctionId);
+                        $('#makeBidModal').modal('hide');
 
+                    }, function(err) {
+                        this.invalidBidCreationInput = true;
+                        this.invalidBidCreationString = "Please ensure your bid is higher than the current bid!";
+                    });
+                }
             },
 
             getAuctionPhotoURL: function(id) {
                 this.$http.get('http://localhost:4941/api/v1/auctions/' + id + '/photos')
                 .then(function(response) {
-                    console.log(response);
+                
                     return response.url;
                 });
             },
@@ -333,9 +405,23 @@
                 var files = document.getElementById("photoUploadFile").files;
                 var photoDiv = document.getElementById("uploadAuctionPhotoDiv");
 
-                // while(photoDiv.firstChild) {
-                //     photoDiv.removeChild(photoDiv.firstChild);
-                // }
+                while(photoDiv.firstChild) {
+                    photoDiv.removeChild(photoDiv.firstChild);
+                }
+
+                var img = document.createElement("img");
+                img.src = window.URL.createObjectURL(files[0]);
+                photoDiv.appendChild(img);
+
+            },
+
+            updateAuctionEditImageDisplay: function() {
+                var files = document.getElementById("updatePhotoUploadFile").files;
+                var photoDiv = document.getElementById("updateUploadAuctionPhotoDiv");
+
+                while(photoDiv.firstChild) {
+                    photoDiv.removeChild(photoDiv.firstChild);
+                }
 
                 var img = document.createElement("img");
                 img.src = window.URL.createObjectURL(files[0]);
@@ -386,31 +472,21 @@
                     this.invalidCreationString = "Please enter a reserve price that is valid!";
                 } else if(this.startingBid < 0) {
                     this.invalidCreationInput = true;
-                    this.invalidCreationString = "Please enter a reserve price that is valid!";
+                    this.invalidCreationString = "Please enter a starting bid that is valid!";
                 } else {
-                    $('#createAuctionModal').modal('hide');
-                    var auctionPostJSON = {
-                        "categoryId": Number(this.createCategorySelected),
+                    this.$http.post('http://localhost:4941/api/v1/auctions', 
+                    JSON.stringify({
+                        "categoryId": parseInt(this.createCategorySelected),
                         "title": this.title,
                         "description": this.description,
                         "startDateTime": this.startDateTime,
                         "endDateTime": this.endDateTime,
-                        "reservePrice": Number(this.reservePrice),
-                        "startingBid": Number(this.startingBid)
-                    }
-                    console.log(auctionPostJSON);
-                    console.log(typeof auctionPostJSON.categoryId);
-                    console.log(typeof auctionPostJSON.title);
-                    console.log(typeof auctionPostJSON.description);
-                    console.log(typeof auctionPostJSON.startDateTime);
-                    console.log(typeof auctionPostJSON.endDateTime);
-                    console.log(typeof auctionPostJSON.reservePrice);
-                    console.log(typeof auctionPostJSON.startingBid);
-                    this.$http.post('http://localhost:4941/api/v1/auctions', 
-                    {auctionPostJSON}, 
+                        "reservePrice": parseInt(this.reservePrice),
+                        "startingBid": parseInt(this.startingBid)
+                    }), 
                     {headers: {'X-Authorization': localStorage.getItem("token")}})
                     .then(function(response) {
-                        console.log(response);
+                        $('#createAuctionModal').modal('hide');
                         this.getAuctions();
                         this.title = "";
                         this.description = "";
@@ -418,6 +494,28 @@
                         this.endDateTime = "";
                         this.startingBid = "";
                         this.reservePrice = "";
+                        this.createdAuctionId = response.body.id;
+                    }, function(err) {
+                        this.invalidCreationInput = true;
+                        this.invalidCreationString = "Please enter a valid auction! (Not before today and the end date is after the start date)";
+                    })
+                    .then(function(response) {
+                        if(!this.invalidCreationInput) {
+                            var files = document.getElementById("photoUploadFile").value;
+                            
+
+                            //$('#createAuctionModal').modal('hide');
+                            this.$http.post('http://localhost:4941/api/v1/auctions/' + this.createdAuctionId + '/photos', 
+                            files, {headers: {
+                                'Content-Type': "image/png",
+                                'X-Authorization': localStorage.getItem("token")
+                            }})
+                            .then(function(response) {
+                                
+
+                            });
+                        }
+
                     });
                 }
 
@@ -427,13 +525,38 @@
             getSingleAuction: function(id) {
                 this.$http.get('http://localhost:4941/api/v1/auctions/' + id)
                 .then(function(response) {
-                    console.log(response);
+                    
                     this.currentAuction = response.data;
                     this.getAuctionPhoto(id);
-                    this.getSeller(this.currentAuction.seller.id)
+                    this.getSeller(this.currentAuction.seller.id);
+                    
                 }, function(error) {
                     this.error = error;
                     this.errorFlag = true;
+                })
+                .then(function(response) {
+                    //Put in all of the edit auction modal fields
+                    this.updateTitle = this.currentAuction.title;
+                    this.updateDescription = this.currentAuction.description;
+
+                    document.getElementById("updateAuctionCategorySelect").selectedIndex = this.currentAuction.categoryId - 1;
+
+                    var startDate = new Date(this.currentAuction.startDateTime);
+                    document.getElementById("updateStartDateTimePicker").value = startDate.toISOString().substring(0,16);
+                    var endDate = new Date(this.currentAuction.endDateTime);
+                    document.getElementById("updateEndDateTimePicker").value = endDate.toISOString().substring(0,16);
+
+                    this.updateReservePrice = this.currentAuction.reservePrice;
+                    this.updateStartingBid = this.currentAuction.startingBid;
+
+                    var photoDiv = document.getElementById("updateUploadAuctionPhotoDiv");
+                    var img = document.createElement("img");
+                    img.src = 'http://localhost:4941/api/v1/auctions/' + id + '/photos';
+                    photoDiv.appendChild(img);
+
+
+
+
                 });
 
             },
@@ -441,13 +564,30 @@
             getAuctionPhoto: function(id) {
                 this.$http.get('http://localhost:4941/api/v1/auctions/' + id + '/photos')
                 .then(function(response) {
-                    console.log(response);
+                    
                     var photoDiv = document.getElementById("photoDiv");
+
+                    while(photoDiv.firstChild) {
+                        photoDiv.removeChild(photoDiv.firstChild);
+                    }
+
                     var img = document.createElement("img");
                     img.height = 500;
                     img.width = 600;
                     img.src = response.url;
                     photoDiv.appendChild(img);
+                });
+            },
+
+            searchAuctions: function(searchQuery) {
+                console.log(searchQuery);
+                this.$http.get('http://localhost:4941/api/v1/auctions?' + searchQuery)
+                .then(function(response) {
+                     this.auctions = response.data;
+                     console.log(response.data);
+                }, function(error) {
+                    this.error = error;
+                    this.errorFlag = true;
                 });
             },
 
@@ -467,7 +607,7 @@
                 if(this.searchedTitle !== "") {
                     this.$http.get('http://localhost:4941/api/v1/auctions?q=' + this.searchedTitle + '&category-id=' + this.categorySelected)
                     .then(function(response) {
-                        console.log(response);
+                        
                         this.auctions = response.data;
                     }, function(error) {
                         this.error = error;
@@ -476,12 +616,90 @@
                 } else {
                     this.$http.get('http://localhost:4941/api/v1/auctions?category-id=' + this.categorySelected)
                     .then(function(response) {
-                        console.log(response);
+                       
                         this.auctions = response.data;
                     }, function(error) {
                         this.error = error;
                         this.errorFlag = true;
                     }); 
+                }
+
+            },
+
+            editAuction: function(id) {
+
+                var e = document.getElementById("updateAuctionCategorySelect");
+                this.updateCreateCategorySelected = e.options[e.selectedIndex].value;
+
+                this.updateStartDateTime = Date.parse(document.getElementById("updateStartDateTimePicker").value);
+                this.updateEndDateTime = Date.parse(document.getElementById("updateEndDateTimePicker").value);
+                console.log(this.updateStartDateTime);
+                console.log(this.updateEndDateTime);
+
+                if(this.updateTitle === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a title!";
+                } else if(this.updateDescription === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a description!";
+                } else if(this.updateStartDateTime === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a starting date!";
+                } else if(this.updateEndDateTime === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a ending date!";
+                } else if(this.updateStartingBid === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a starting bid!";
+                } else if(this.updateReservePrice === "") {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a reserve price!";
+                } else if(this.updateReservePrice < 0){
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a reserve price that is valid!";
+                } else if(this.updateStartingBid < 0) {
+                    this.invalidUpdateInput = true;
+                    this.invalidUpdateString = "Please enter a starting bid that is valid!";
+                } else {
+                    this.$http.patch('http://localhost:4941/api/v1/auctions/' + id, 
+                    JSON.stringify({
+                        "categoryId": parseInt(this.updateCreateCategorySelected),
+                        "title": this.updateTitle,
+                        "description": this.updateDescription,
+                        "startDateTime": this.updateStartDateTime,
+                        "endDateTime": this.updateEndDateTime,
+                        "reservePrice": parseInt(this.updateReservePrice),
+                        "startingBid": parseInt(this.updateStartingBid)
+                    }), 
+                    {headers: {'X-Authorization': localStorage.getItem("token")}})
+                    .then(function(response) {
+                        $('#editAuctionModal').modal('hide');
+                        console.log("hello");
+                        this.getSingleAuction(id);
+
+
+                    }, function(err) {
+                        this.invalidUpdateInput = true;
+                        this.invalidUpdateString = "Please enter a valid auction! (Not before today and the end date is after the start date)";
+                    })
+                    .then(function(response) {
+                        if(!this.invalidCreationInput) {
+                            // var files = document.getElementById("updatePhotoUploadFile").value;
+                            
+
+                            // //$('#editAuctionModal').modal('hide');
+                            // this.$http.post('http://localhost:4941/api/v1/auctions/' + id + '/photos', 
+                            // files, {headers: {
+                            //     'Content-Type': "image/png",
+                            //     'X-Authorization': localStorage.getItem("token")
+                            // }})
+                            // .then(function(response) {
+                                
+
+                            // });
+                        }
+
+                    });
                 }
 
             }

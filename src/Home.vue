@@ -213,8 +213,14 @@
         },
         mounted: function() {
             this.loginString = "No user is currently logged in."
-            if(localStorage.getItem("token") !== "") {
-                console.log("USER IS LOGGED IN ALREADY - NEED TO FIX");
+            if(localStorage.getItem("user_id") !== "") {
+                this.$http.get('http://localhost:4941/api/v1/users/' + localStorage.getItem("user_id"), 
+                {headers: {'X-Authorization': localStorage.getItem("token")}})
+                .then(function(response) {
+                    this.loggedInUser = response.body;
+                    this.loggedInUserId = localStorage.getItem("user_id");
+                    this.loginString = "Currently logged in as username: " + response.body.username + " with id: " + localStorage.getItem("user_id");
+                });
             }
 
 
@@ -271,7 +277,8 @@
                     this.$http.post('http://localhost:4941/api/v1/users/login', loginJSON)
                     .then(function(response) {
                         this.loggedInUserId = response.body.id;
-                        localStorage.setItem("token", response.body.token)
+                        localStorage.setItem("token", response.body.token);
+                        localStorage.setItem("user_id", response.body.id)
                         this.loginString = "Currently logged in as username: " + this.loginUsername + " with id: " + this.loggedInUserId;
                         this.loginUsername = "";
                         this.loginPassword = "";
@@ -301,6 +308,7 @@
                     this.loggedInUserId = "";
                     this.loginString = "No user is currently logged in.";
                     localStorage.removeItem("token");
+                    localStorage.removeItem("user_id");
                 });
             },
 
@@ -361,6 +369,7 @@
                         .then(function(response) {
                             console.log(response);
                             localStorage.setItem("token", response.body.token);
+                            localStorage.setItem("user_id", response.body.id)
                             this.loggedInUserId = response.body.id;
                             this.loginString = "Currently logged in as username: " + this.username + " with id: " + this.loggedInUserId;
                             this.username = "";
