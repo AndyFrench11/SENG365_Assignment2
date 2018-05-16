@@ -92,19 +92,19 @@
                     </div>
                     <div class="modal-body">
                         <b>You must enter either a username or email to login.</b>
-                        <form>
+                        <form id="loginUserForm" v-on:submit="loginUser()">
                             Username: <input v-model="loginUsername" placeholder="username" type="text"/>
                             <br/>
                             Email: <input v-model="loginEmail" placeholder="email" type="text"/>
                             <br/>
-                            <font color="red">*</font><b>Password</b>: <input v-model="loginPassword" placeholder="password" type="password"/>
+                            <font color="red">*</font><b>Password</b>: <input v-model="loginPassword" placeholder="password" type="password" required/>
                         </form>
                         <div v-if="invalidLoginInput">
                             <font color="red">* {{ this.invalidLoginString }}</font>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" v-on:click="loginUser()">
+                        <button type="submit" class="btn btn-primary" form="loginUserForm">
                             Login
                         </button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -125,25 +125,25 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form>
-                            <font color="red">*</font><b>Given Name:</b> <input v-model="givenName" placeholder="given name" type="text"/>
+                        <form id="addUserForm" v-on:submit="addNewUser()">
+                            <font color="red">*</font><b>Given Name:</b> <input v-model="givenName" placeholder="given name" type="text" required/>
                             <br/>
-                            <font color="red">*</font><b>Family Name:</b> <input v-model="familyName" placeholder="family name" type="text"/>
+                            <font color="red">*</font><b>Family Name:</b> <input v-model="familyName" placeholder="family name" type="text" required/>
                             <br/>
-                            <font color="red">*</font><b>Username:</b> <input v-model="username" placeholder="username" type="text"/>
+                            <font color="red">*</font><b>Username:</b> <input v-model="username" placeholder="username" type="text" required/>
                             <br/>
-                            <font color="red">*</font><b>Email:</b> <input v-model="email" placeholder="email" type="email"/>
+                            <font color="red">*</font><b>Email:</b> <input v-model="email" placeholder="email" type="email" required/>
                             <br/>
-                            <font color="red">*</font><b>Password:</b> <input v-model="password" placeholder="password" type="password"/>
+                            <font color="red">*</font><b>Password:</b> <input v-model="password" placeholder="password" type="password" required/>
                             <br/>
-                            <font color="red">*</font><b>Confirm Password:</b> <input v-model="confirmPassword" placeholder="confirm password" type="password"/>
+                            <font color="red">*</font><b>Confirm Password:</b> <input v-model="confirmPassword" placeholder="confirm password" type="password" required/>
                         </form>
                         <div v-if="invalidInput">
                             <font color="red">* {{ this.invalidString }}</font>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button id="addUserButton" type="button" class="btn btn-primary" v-on:click="addNewUser()">
+                        <button type="submit" class="btn btn-primary" form="addUserForm">
                             Add New User
                         </button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -213,7 +213,8 @@
         },
         mounted: function() {
             this.loginString = "No user is currently logged in."
-            if(localStorage.getItem("user_id") !== "") {
+            if(localStorage.getItem("user_id") != null) {
+                console.log("Hello");
                 this.$http.get('http://localhost:4941/api/v1/users/' + localStorage.getItem("user_id"), 
                 {headers: {'X-Authorization': localStorage.getItem("token")}})
                 .then(function(response) {
@@ -223,9 +224,22 @@
                 });
             }
 
+            //Ensure user forms dont refresh when clicked.
+            // $('#loginUserForm').submit(function(e) {
+            var loginUser = document.getElementById("loginUserForm");
+            loginUser.addEventListener('submit', this.handleForm);
+
+            var createUser = document.getElementById("addUserForm");
+            createUser.addEventListener('submit', this.handleForm);
+
+
 
         },
         methods: {
+            handleForm: function(event) { 
+                event.preventDefault(); 
+            }, 
+
             updateUser: function() {
                 if(this.updateGivenName === "" && this.updateFamilyName === "") {
                     this.updateInvalidInput = true;
@@ -258,14 +272,11 @@
             },
 
             loginUser: function() {
-                if(this.loginPassword === "") {
-                    this.invalidLoginInput = true;
-                    this.invalidLoginString = "You must enter a password to log in!";
-                } else if((this.loginUsername === "") && (this.loginPassword === "")) {
+                if((this.loginUsername === "") && (this.loginPassword === "")) {
                     this.invalidLoginInput = true;
                     this.invalidLoginString = "Please enter either a username or email to log in!";
                 } else {
-                    $('#loginUserModal').modal('hide');
+                    
                     var loginJSON = {};
                     if(this.loginUsername !== "") {
                         loginJSON["username"] = this.loginUsername;
@@ -274,8 +285,12 @@
                         loginJSON["email"] = this.loginEmail;
                     }
                     loginJSON["password"] = this.loginPassword;
+                    console.log("Hello");
                     this.$http.post('http://localhost:4941/api/v1/users/login', loginJSON)
                     .then(function(response) {
+                        $('#loginUserModal').modal('hide');
+                        console.log(response);
+                        console.log("GDAY");
                         this.loggedInUserId = response.body.id;
                         localStorage.setItem("token", response.body.token);
                         localStorage.setItem("user_id", response.body.id)
@@ -284,14 +299,19 @@
                         this.loginPassword = "";
                         this.loginEmail = "";
                         this.invalidLoginString = "";
-
-                        this.$http.get('http://localhost:4941/api/v1/users/' + response.body.id, 
-                        {headers: {'X-Authorization': localStorage.getItem("token")}})
-                        .then(function(response) {
-                            this.loggedInUser = response.body;
-                            document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
-                            document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
-                        })
+                    }, function(err) {
+                        this.invalidLoginInput = true;
+                        this.invalidLoginString = "Please enter either a username or email to log in!";
+                    }).then(function(response) {
+                        if(!this.invalidLoginInput) {
+                            this.$http.get('http://localhost:4941/api/v1/users/' + this.loggedInUserId, 
+                            {headers: {'X-Authorization': localStorage.getItem("token")}})
+                            .then(function(response) {
+                                this.loggedInUser = response.body;
+                                document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
+                                document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
+                            });
+                        }
 
                     });
 

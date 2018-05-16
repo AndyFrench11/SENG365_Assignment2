@@ -10,7 +10,6 @@ Vue.use(VueRouter);
 import VueResource from 'vue-resource';
 Vue.use(VueResource);
 
-Vue.http.options.emulateJSON = true;
 
 const routes = [
   {
