@@ -1,6 +1,28 @@
 <template>
   <div id="app">
+    <nav class="navbar navbar-dark bg-primary" style="background-color: #00365e;">
+      <a class="navbar-left"><img src="./assets/images.png" height="40" width="40"></a>
+      <label class="navbar-brand">Andy's Auction Area</label>
+      
+      <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="nav nav-pills">
+          <li class="nav-item">
+              <router-link :to="{ name: 'home'}">Home</router-link>
+          </li>
+          <li class="nav-item">
+              <router-link :to="{ name: 'auctions'}">Auctions</router-link>
+          </li>
+          <li class="nav-item">
+              <router-link :to="{ name: 'auctions'}">My Account</router-link>
+          </li>
+          </ul>
+      </div>
+    </nav>
+    <br/>
     <router-view></router-view>
+      <nav class="navbar navbar-dark bg-primary" style="background-color: #00365e;">
+      <label class="navbar-bottom">Andy French Enterprises T.M.</label>
+    </nav>
   </div>
 </template>
 
@@ -17,12 +39,11 @@ export default {
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  /* font-family: 'Avenir', Helvetica, Arial, sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  background-color: rgb(204, 204, 204);
 }
 
 h1, h2 {
@@ -40,8 +61,30 @@ li {
 }
 
 a {
-  color: #42b983;
+  color: #ffffff;
+  padding: 12px 20px;
 }
+
+.navbar-brand
+{
+  font-size: 30px;
+}
+
+.navbar {
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+.nav.nav-pills li a {
+ line-height: 30px;
+}
+
+.nav-link.selected {
+  color: #ffffff;
+}
+
 
 input[type=text], input[type=email], input[type=password] {
     width: 100%;

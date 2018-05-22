@@ -1,10 +1,57 @@
 <template>
+
     <div>
-        <img src="./assets/andyA.jpg">
-        <h1>Andy's Auction App!</h1>
-        <h2>Navigation</h2>
-        <br/>
-        <router-link :to="{ name: 'auctions', params: { userId: loggedInUserId }}">Auctions</router-link>
+        <div class="container">
+            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                <!-- Indicators -->
+                <ol class="carousel-indicators">
+                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                    <li data-target="#myCarousel" data-slide-to="2"></li>
+                </ol>
+
+                <!-- Wrapper for slides -->
+                <div class="carousel-inner">
+                    <div class="item active">
+                    <img src="./assets/city.jpg" alt="First Slide">
+                      <div class="carousel-caption d-none d-md-block">
+                        <h1><font color="white">Welcome to Andy's Auction Area!</font></h1>
+                        <h3>The trading website that will change your life.</h3>
+                    </div>
+                    </div>
+
+                    <div class="item">
+                    <img src="./assets/bike.jpg" alt="Second Slide">
+                        <div class="carousel-caption d-none d-md-block">
+                        <h1><font color="white">Visit the auctions page to view all auctions!</font></h1>
+                        <h3>Buy and Choose items as you wish!</h3>
+                    </div>
+                    </div>
+
+                    <div class="item">
+                    <img src="./assets/beach2.jpg" alt="Third Slide">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h1><font color="white">Personalise your account in the my account page!</font></h1>
+                        <h3>View and edit all of your details.</h3>
+                    </div>
+                    </div>
+                </div>
+
+                <!-- Left and right controls -->
+                <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                    <span class="glyphicon glyphicon-chevron-left"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+        </div>
+
+       
+
+        
         <br/><br/>
         <div v-if="loggedInUserId === ''">
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginUserModal">Login</button>
@@ -154,22 +201,6 @@
             </div>
         </div>
 
-        <br /> <br />
-
-        <h2>Essential Links</h2>
-        <ul>
-        <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-        <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-        <li><a href="https://chat.vuejs.org" target="_blank">Community Chat</a></li>
-        <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-        </ul>
-        <h2>Ecosystem</h2>
-        <ul>
-        <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-        <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-        <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-        <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-        </ul>
     </div>
 
 </template>
@@ -207,7 +238,10 @@
                 updateGivenName: "",
                 updateFamilyName: "",
                 updateInvalidInput: false,
-                updateInvalidString: ""
+                updateInvalidString: "",
+
+                slide: 0,
+                sliding: null
                 
             }
         },
@@ -236,6 +270,14 @@
 
         },
         methods: {
+            onSlideStart (slide) {
+            this.sliding = true
+            },
+
+            onSlideEnd (slide) {
+            this.sliding = false
+            },
+
             handleForm: function(event) { 
                 event.preventDefault(); 
             }, 
@@ -413,5 +455,10 @@
 </script>
 
 <style scoped>
+
+.carousel {
+  width:1200px;
+  height:500px;
+}
 
 </style>

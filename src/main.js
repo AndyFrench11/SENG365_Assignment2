@@ -1,7 +1,8 @@
 import Vue from 'vue'
 import App from './App.vue'
 import Home from "./Home.vue"
-import Users from "./Users.vue"
+import User from "./User.vue"
+import SingleAuction from "./SingleAuction.vue"
 import Auctions from "./Auctions.vue"
 
 import VueRouter from 'vue-router';
@@ -20,14 +21,17 @@ const routes = [
   {
     path: "/auctions",
     name: "auctions",
-    props: true,
     component: Auctions
   },
   {
     path: "/auctions/:auctionId",
     name: "auction",
-    props: true,
-    component: Auctions
+    component: SingleAuction
+  },
+  {
+    path:"/user",
+    name: "user",
+    component: User
   }
 ];
 
