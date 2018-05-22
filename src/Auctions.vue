@@ -4,32 +4,80 @@
             {{ error }}
         </div>
 
-            <div id="photo"></div>
-            <h1>Auctions</h1>
-            
-            <br/><br/>
-            Search Auctions<form>
-                <input v-model="searchedTitle" placeholder="Title"/>
-                <input type="button" value="Go!" v-on:click="searchAuctionsOnTitle()">
-            </form>
-            Filter by category: <select id="filterCategorySelect">
-                <option value="1">Apparel</option>
-                <option value="2">Equipment</option>
-                <option value="3">Vehicles</option>
-                <option value="4">Property</option>
-                <option value="5">Other</option>
-            </select>
-            <button type="button" v-on:click="filterAuctionsByCategory()">Go!</button>
-            <br/><br/>
-            <form>
-                <div class="btn-group" role="group" aria-label="Basic example">
-                        <button type="button" class="btn btn-primary" v-on:click="searchWonAuctions()">Auctions I Won</button>
-                        <button type="button" class="btn btn-primary" v-on:click="searchAuctions(auctionsIHaveBidOn)">Auctions I Have Bid On</button>
-                        <button type="button" class="btn btn-primary" v-on:click="searchAuctions(myAuctionsYetToComplete)">My Auctions Yet To Complete</button>
-                        <button type="button" class="btn btn-primary" v-on:click="searchAuctions(myFinishedWonAuctions)">My Finished Won Auctions</button>
-                        <button type="button" class="btn btn-primary" v-on:click="searchAuctions(myFinishedNonWonAuctions)">My Finished Non-Won Auctions</button>
+
+        <div class="wrapper">
+
+            <nav id="sidebar" style="background-color: #00365e;">
+                <!-- Sidebar Header -->
+                <div class="sidebar-header">
+                    <h3>Auctions</h3>
                 </div>
-            </form>
+
+                <!-- Sidebar Links -->
+                <ul class="list-unstyled components">
+                    <li class='active'><a href="#" v-on:click="getAuctions()">All Auctions</a></li>
+                    <br/>
+
+                    <li><!-- Link with dropdown items -->
+                    <a href="#buyingSubmenu" data-toggle="collapse" aria-expanded="false">Buying</a>
+                    <ul class="collapse list-unstyled" id="buyingSubmenu">
+                        <li><a href="#" v-on:click="searchWonAuctions()">Won</a></li>
+                        <li><a href="#" v-on:click="searchAuctions(auctionsIHaveBidOn)">Bid On</a></li>
+                    </ul></li>
+
+                    <br/>
+
+                    <li><!-- Link with dropdown items -->
+                    <a href="#sellingSubmenu" data-toggle="collapse" aria-expanded="false">Selling</a>
+                    <ul class="collapse list-unstyled" id="sellingSubmenu">
+                        <li><a href="#" v-on:click="searchAuctions(myAuctionsYetToComplete)">Yet To Complete</a></li>
+                        <li><a href="#" v-on:click="searchAuctions(myFinishedWonAuctions)">Won</a></li>
+                        <li><a href="#" v-on:click="searchAuctions(myFinishedNonWonAuctions)">Not Sold</a></li>
+                    </ul></li>
+
+                </ul>
+            </nav>
+
+            <div id="content">
+                <nav class="navbar navbar-default" style="background-color: #00365e;">
+                    <div class="container-fluid">
+
+
+                        <div v-if="loggedInUserId">
+                            <ul class="nav navbar-nav navbar-left">
+                                <li><a href="#" data-toggle="modal" data-target="#createAuctionModal">Create New Auction</a></li>
+                            </ul>
+                        </div>
+
+                        
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item"><a class="page-link" href="#" v-on:click="getPreviousAuctions()">Previous</a></li>
+                                <li class="page-item"><a class="page-link" href="#" v-on:click="getNextAuctions()">Next</a></li>
+                            </ul>
+                        
+                       
+
+                        <form class="nav navbar-nav navbar-right">
+                            <input v-model="searchedTitle" placeholder="Title"/>
+                            <input type="button" value="Go!" v-on:click="searchAuctionsOnTitle()">
+                        </form>
+
+                        Filter by category: <select class="nav navbar-nav navbar-right" id="filterCategorySelect">
+                            <option value="1">Apparel</option>
+                            <option value="2">Equipment</option>
+                            <option value="3">Vehicles</option>
+                            <option value="4">Property</option>
+                            <option value="5">Other</option>
+                        </select>
+                        <button class="nav navbar-nav navbar-right" type="button" v-on:click="filterAuctionsByCategory()">Go!</button>
+
+
+                    </div>
+                </nav>
+        
+
+
+            <br/><br/>
             <br/>
             
                 <div v-if="auctions.length != 0">
@@ -65,8 +113,6 @@
          
 
             <br/>
-            <div v-if="loggedInUserId">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#createAuctionModal">Create New Auction</button>
             </div>
             
             <br/><br/>
@@ -130,8 +176,10 @@
                     </div>
                 </div>
             </div>
+        </div>
 
         </div>
+    
 
 </template>
 
@@ -167,6 +215,7 @@
                 myFinishedNonWonAuctions: "",
 
                 loggedInUserId: parseInt(localStorage.getItem("user_id")),
+                startIndex: 0
 
 
                 
@@ -180,13 +229,35 @@
             this.myFinishedWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=won";
             this.myFinishedNonWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=expired";
             document.getElementById("photoUploadFile").addEventListener('change', this.updateImageDisplay);
+
+            var startDate = new Date();
+            document.getElementById("startDateTimePicker").value = startDate.toISOString().substring(0,16);
+            var endDate = new Date();
+            document.getElementById("endDateTimePicker").value = endDate.toISOString().substring(0,16);
                 
-            
 
 
 
         },
         methods: {
+
+            getNextAuctions: function() {
+                if(this.auctions.length == 8) {
+                    this.startIndex += 8;
+                    this.getAuctions();
+                }
+               
+
+            },
+
+            getPreviousAuctions: function() {
+                this.startIndex -= 8;
+                if(this.startIndex < 0) {
+                    this.startIndex = 0;
+                }
+                this.getAuctions();
+
+            },
 
             updateImageDisplay: function() {
                 console.log("Hello");
@@ -204,7 +275,7 @@
             },
 
             getAuctions: function() {
-                this.$http.get('http://localhost:4941/api/v1/auctions')
+                this.$http.get('http://localhost:4941/api/v1/auctions?startIndex=' + this.startIndex +'&count=8')
                 .then(function(response) {
                     this.auctions = response.data;
                     
@@ -367,6 +438,110 @@
 </script>
 
 <style scoped>
+
+.wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+}
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+a[aria-expanded="false"]::before, a[aria-expanded="true"]::before {
+    /* content: '\e259'; */
+    display: block;
+    position: absolute;
+    right: 20px;
+    font-family: 'Glyphicons Halflings';
+    font-size: 0.6em;
+}
+
+a[aria-expanded="true"]::before {
+    /* content: '\e260'; */
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+}
+
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+}
+
+p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #999;
+}
+
+a, a:hover, a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+#sidebar {
+    /* don't forget to add all the previously mentioned styles here too */
+    color: #fff;
+    transition: all 0.3s;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #747474;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+#sidebar ul li a:hover {
+    color: #747474;
+    background: #fff;
+}
+
+#sidebar ul li.active > a, a[aria-expanded="true"] {
+    color: #fff;
+    background: #747474;
+}
+ul ul a {
+    font-size: 0.9em !important;
+    padding-left: 30px !important;
+    background: #747474;
+}
 
 
 </style>
