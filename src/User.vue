@@ -1,20 +1,23 @@
 <template>
     <div>
-
-        <h4>Details</h4>
-        <b>Username:</b> {{ this.loggedInUser.username }}
         <br/>
-        <b>Given Name:</b> {{ this.loggedInUser.givenName }}
-        <br/>
-        <b>Family Name:</b> {{ this.loggedInUser.familyName }}
-        <br/>
-        <b>Email:</b> {{ this.loggedInUser.email }}
-        <br/>
-        <b>Account Balance:</b> ${{ this.loggedInUser.accountBalance }}
-
-        <br/>
-
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editUserModal">Edit User</button>
+        <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">My Information</h1>
+            <p class="lead"><b>Username:</b> {{ this.loggedInUser.username }}</p>
+            <hr class="my-4">
+            <p class="lead"><b>Given Name:</b> {{ this.loggedInUser.givenName }}</p>
+            <hr class="my-4">
+            <p class="lead"><b>Family Name:</b> {{ this.loggedInUser.familyName }}</p>
+            <hr class="my-4">
+            <p class="lead"><b>Email:</b> {{ this.loggedInUser.email }}</p>
+            <hr class="my-4">
+            <p class="lead"><b>Account Balance:</b> ${{ this.loggedInUser.accountBalance }}</p>
+            <p class="lead">
+                <a class="btn btn-outline-secondary btn-lg" href="#" role="button" data-toggle="modal" data-target="#editUserModal">Edit Current User</a>
+            </p>
+        </div>
+        </div>
 
         <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -81,7 +84,8 @@ export default {
                 .then(function(response) {
                     this.loggedInUser = response.body;
                     this.loggedInUserId = localStorage.getItem("user_id");
-                    this.loginString = "Currently logged in as username: " + response.body.username + " with id: " + localStorage.getItem("user_id");
+                    document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
+                    document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
                 });
             }
 

@@ -1,43 +1,51 @@
 <template>
   <div id="app">
-    <nav class="navbar navbar-dark bg-primary" style="background-color: #00365e;">
-      <a class="navbar-left"><img src="./assets/images.png" height="40" width="40"></a>
-      <label class="navbar-brand">Andy's Auction Area</label>
-      
-      <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="nav nav-pills">
-          <li class="nav-item">
-              <router-link :to="{ name: 'home'}">Home</router-link>
-          </li>
-          <li class="nav-item">
-              <router-link :to="{ name: 'auctions'}">Auctions</router-link>
-          </li>
-          <li class="nav-item">
-              
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              My Account
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addUserModal">Register as New User</a>
-              <br/>
-              <div v-if="loggedInUserId">
-                <router-link class="dropdown-item" :to="{ name: 'user'}">View My Info</router-link>
-                <br/>
-                <a class="dropdown-item" href="#" v-on:click="logoutUser()">Logout</a>
-              </div>
-              <div v-else>
-                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#loginUserModal">Login</a>
-                <br/>
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom border-light">
+        <a class="navbar-left"><img src="./assets/images.png" height="40" width="40"></a>
+        <a class="navbar-brand" href="#">Auctions R' Us</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-              </div>
-              
-            </div>
-          </li>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <router-link :to="{ name: 'home'}">
+                    <a class="nav-link" href="#">Home</a>
+                </router-link>
+            </li>
+            <li class="nav-item">
+                <router-link :to="{ name: 'auctions'}">
+                    <a class="nav-link" href="#">Auctions</a>
+                </router-link>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" style href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                My Account
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#addUserModal">Register as New User</a>
+                <div v-if="loggedInUserId">
+                    <router-link :to="{ name: 'user'}">
+                        <a class="dropdown-item" href="#">View My Info</a>
+                    </router-link>
+                    <a class="dropdown-item" href="#" v-on:click="logoutUser()">Logout</a>
+                </div>
+                <div v-else>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#loginUserModal">Login</a>
+                </div>
+                </div>
+            </li>
+            </ul>
+        </div>
+    </nav>
 
-          </ul>
-      </div>
+
+
+
+
+    
 
       <div class="modal fade" id="loginUserModal" tabindex="-1" role="dialog" aria-labelledby="loginUserModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -49,20 +57,37 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <b>You must enter either a username or email to login.</b>
-                        <form id="loginUserForm" v-on:submit="loginUser()">
-                            Username: <input v-model="loginUsername" placeholder="username" type="text"/>
-                            <br/>
-                            Email: <input v-model="loginEmail" placeholder="email" type="text"/>
-                            <br/>
-                            <font color="red">*</font><b>Password</b>: <input v-model="loginPassword" placeholder="password" type="password" required/>
+                        <p class="lead"><b>You must enter either a username or email to login.</b></p>
+
+                        <form id="loginUserForm" v-on:submit.prevent="loginUser()">
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Username</span>
+                        </div>
+                        <input class="form-control" v-model="loginUsername" placeholder="" type="text"/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1">Email</span>
+                        </div>
+                        <input class="form-control" v-model="loginEmail" placeholder="" type="email"/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Password</span>
+                        </div>
+                        <input class="form-control" v-model="loginPassword" placeholder="" type="password" required/>
+                        </div>
                         </form>
-                        <div v-if="invalidLoginInput">
+                        <div class="alert alert-danger" role="alert" v-if="invalidLoginInput">
                             <font color="red">* {{ this.invalidLoginString }}</font>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" form="loginUserForm">
+                        <button type="submit" class="btn btn-outline-secondary" form="loginUserForm">
                             Login
                         </button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -83,25 +108,59 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <form id="addUserForm" v-on:submit="addNewUser()">
-                            <font color="red">*</font><font color="black"><b>Given Name:</b></font> <input v-model="givenName" placeholder="given name" type="text" required/>
-                            <br/>
-                            <font color="red">*</font><font color="black"><b>Family Name:</b></font> <input v-model="familyName" placeholder="family name" type="text" required/>
-                            <br/>
-                            <font color="red">*</font><font color="black"><b>Username:</b></font> <input v-model="username" placeholder="username" type="text" required/>
-                            <br/>
-                            <font color="red">*</font><font color="black"><b>Email:</b></font> <input v-model="email" placeholder="email" type="email" required/>
-                            <br/>
-                            <font color="red">*</font><font color="black"><b>Password:</b></font> <input v-model="password" placeholder="password" type="password" required/>
-                            <br/>
-                            <font color="red">*</font><font color="black"><b>Confirm Password:</b></font> <input v-model="confirmPassword" placeholder="confirm password" type="password" required/>
-                        </form>
-                        <div v-if="invalidInput">
+                        
+                        <form id="addUserForm" v-on:submit.prevent="addNewUser()">
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Given Name</span>
+                        </div>
+                        <input class="form-control" v-model="givenName" placeholder="" type="text" required/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Family Name</span>
+                        </div>
+                        <input class="form-control" v-model="familyName" placeholder="" type="text" required/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Username</span>
+                        </div>
+                        <input class="form-control" v-model="username" placeholder="" type="text" required/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Email</span>
+                        </div>
+                        <input class="form-control" v-model="email" placeholder="" type="email" required/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Password</span>
+                        </div>
+                        <input class="form-control" v-model="password" placeholder="" type="password" required/>
+                        </div>
+
+                        <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Confirm Password</span>
+                        </div>
+                        <input class="form-control" v-model="confirmPassword" placeholder="" type="password" required/>
+                        </div>
+                        <div class="alert alert-danger" role="alert" v-if="invalidInput">
                             <font color="red">* {{ this.invalidString }}</font>
                         </div>
+
+                        </form>
+
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary" form="addUserForm">
+                        <button type="submit" class="btn btn-outline-secondary" form="addUserForm">
                             Add New User
                         </button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -111,12 +170,9 @@
                 </div>
             </div>
         </div>
-
-
-    </nav>
     <router-view></router-view>
-      <nav class="navbar navbar-dark bg-primary" style="background-color: #00365e;">
-      <label class="navbar-bottom">Andy French Enterprises T.M.</label>
+      <nav class="navbar navbar-dark bg-dark">
+      <label class="navbar-bottom" style="color: white;">Auctions R' Us Enterprises T.M.</label>
     </nav>
   </div>
 </template>
@@ -168,34 +224,23 @@ export default {
                 loginJSON["email"] = this.loginEmail;
             }
             loginJSON["password"] = this.loginPassword;
-            console.log("Hello");
             this.$http.post('http://localhost:4941/api/v1/users/login', loginJSON)
             .then(function(response) {
-                $('#loginUserModal').modal('hide');
                 console.log(response);
-                console.log("GDAY");
+
+                $('#loginUserModal').modal('hide');
+                 window.location.reload();
+
                 this.loggedInUserId = response.body.id;
                 localStorage.setItem("token", response.body.token);
                 localStorage.setItem("user_id", response.body.id)
-                this.loginString = "Currently logged in as username: " + this.loginUsername + " with id: " + this.loggedInUserId;
                 this.loginUsername = "";
                 this.loginPassword = "";
                 this.loginEmail = "";
                 this.invalidLoginString = "";
             }, function(err) {
                 this.invalidLoginInput = true;
-                this.invalidLoginString = "Please enter either a username or email to log in!";
-            }).then(function(response) {
-                if(!this.invalidLoginInput) {
-                    this.$http.get('http://localhost:4941/api/v1/users/' + this.loggedInUserId, 
-                    {headers: {'X-Authorization': localStorage.getItem("token")}})
-                    .then(function(response) {
-                        this.loggedInUser = response.body;
-                        document.getElementById("updateGivenNameInput").placeholder = this.loggedInUser.givenName;
-                        document.getElementById("updateFamilyNameInput").placeholder = this.loggedInUser.familyName;
-                    });
-                }
-
+                this.invalidLoginString = "Invalid username or password! Please try again.";
             });
 
 
@@ -209,9 +254,10 @@ export default {
         {headers: {'X-Authorization': localStorage.getItem("token")}})
         .then(function(response) {
             this.loggedInUserId = "";
-            this.loginString = "No user is currently logged in.";
             localStorage.removeItem("token");
             localStorage.removeItem("user_id");
+            window.location.reload();
+            this.$router.push('/');
         });
     },
 
@@ -263,7 +309,7 @@ export default {
             })
             .then(function(response) {
                 if(!this.invalidInput) {
-                    $('#addUserModal').modal('hide');
+                   
                     this.$http.post('http://localhost:4941/api/v1/users/login', {
                     "username": this.username,
                     "email": this.email,
@@ -281,7 +327,9 @@ export default {
                     this.$http.get('http://localhost:4941/api/v1/users/' + response.body.id, 
                     {headers: {'X-Authorization': localStorage.getItem("token")}})
                     .then(function(response) {
+                        $('#addUserModal').modal('hide');
                         this.loggedInUser = response.body;
+                        window.location.reload();
                     })
 
                 });
@@ -300,7 +348,6 @@ export default {
   /* font-family: 'Avenir', Helvetica, Arial, sans-serif; */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   background-color: rgb(204, 204, 204);
 }
 
@@ -315,7 +362,6 @@ ul {
 
 li {
   display: inline-block;
-  margin: 0 10px;
 }
 
 a {
@@ -328,30 +374,20 @@ a {
   font-size: 30px;
 }
 
-.navbar {
-    -webkit-border-radius: 0;
-    -moz-border-radius: 0;
-    border-radius: 0;
-    margin-bottom: 0;
-}
-
-.nav.nav-pills li a {
- line-height: 30px;
-}
-
 .nav-link.selected {
   color: #ffffff;
 }
 
+.nav-link {
+    display: inline;
+}
 
-
-
-input[type=text], input[type=email], input[type=password] {
+/* input[type=text], input[type=email], input[type=password] {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
     box-sizing: border-box;
-}
+} */
 
 input:invalid+span:after {
     content: '✖';
@@ -379,8 +415,11 @@ td
 tr:hover {background-color: #f5f5f5;}
 
 .dropdown-menu{
-  background-color: #00365e;
-  width: 180px;
+  width: 200px;
+}
+
+.bg-primary {
+    color: rgb(0, 0, 0);
 }
 
 

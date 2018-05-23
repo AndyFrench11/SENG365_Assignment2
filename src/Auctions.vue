@@ -7,98 +7,122 @@
 
         <div class="wrapper">
 
-            <nav id="sidebar" style="background-color: #00365e;">
+            <nav id="sidebar" style="background-color: #343a40!important;">
                 <!-- Sidebar Header -->
                 <div class="sidebar-header">
                     <h3>Auctions</h3>
+                    <h5>{{ searchCriteria }}</h5>
                 </div>
 
                 <!-- Sidebar Links -->
                 <ul class="list-unstyled components">
-                    <li class='active'><a href="#" v-on:click="getAuctions()">All Auctions</a></li>
+                    <li><a href="#" v-on:click="getAuctions()">All Auctions</a></li>
                     <br/>
 
+                    <div v-if="loggedInUserId">
+                        <li><!-- Link with dropdown items -->
+                        <a href="#buyingSubmenu" data-toggle="collapse" aria-expanded="false">Buying</a>
+                        <ul class="collapse list-unstyled" id="buyingSubmenu">
+                            <li><a class="download" href="#" v-on:click="searchWonAuctions()">→ Won</a></li>
+                            <br/>
+                            <li><a href="#" v-on:click="searchAuctions(auctionsIHaveBidOn, 'Bid On')">→ Bid On</a></li>
+                        </ul></li>
+
+                        <br/>
+
+                        <li><!-- Link with dropdown items -->
+                        <a href="#sellingSubmenu" data-toggle="collapse" aria-expanded="false">Selling</a>
+                        <ul class="collapse list-unstyled" id="sellingSubmenu">
+                            <li><a href="#" v-on:click="searchAuctions(myAuctionsYetToComplete, 'Upcoming')">→ Upcoming</a></li>
+                            <br/>
+                            <li><a href="#" v-on:click="searchAuctions(myActiveAuctions, 'Active')">→ Active</a></li>
+                            <br/>
+                            <li><a href="#" v-on:click="searchAuctions(myFinishedWonAuctions, 'Sold')">→ Sold</a></li>
+                            <br/>
+                            <li><a href="#" v-on:click="searchAuctions(myFinishedNonWonAuctions, 'Not Sold')">→ Not Sold</a></li>
+                        </ul></li>
+                    </div>
+
+                </ul>
+
+                <ul class="list-unstyled CTAs">
                     <li><!-- Link with dropdown items -->
-                    <a href="#buyingSubmenu" data-toggle="collapse" aria-expanded="false">Buying</a>
-                    <ul class="collapse list-unstyled" id="buyingSubmenu">
-                        <li><a href="#" v-on:click="searchWonAuctions()">Won</a></li>
-                        <li><a href="#" v-on:click="searchAuctions(auctionsIHaveBidOn)">Bid On</a></li>
+                    <a href="#filterSubmenu" data-toggle="collapse" aria-expanded="false">Filter</a>
+                    <ul class="collapse list-unstyled" id="filterSubmenu">
+                        <li><a href="#" v-on:click="filterAuctionsByCategory(1)">→ Apparel</a></li>
+                        <br/>
+                        <li><a href="#" v-on:click="filterAuctionsByCategory(2)">→ Equipment</a></li>
+                        <br/>
+                        <li><a href="#" v-on:click="filterAuctionsByCategory(3)">→ Vehicles</a></li>
+                        <br/>
+                        <li><a href="#" v-on:click="filterAuctionsByCategory(4)">→ Property</a></li>
+                        <br/>
+                        <li><a href="#" v-on:click="filterAuctionsByCategory(5)">→ Other</a></li>
                     </ul></li>
-
-                    <br/>
-
-                    <li><!-- Link with dropdown items -->
-                    <a href="#sellingSubmenu" data-toggle="collapse" aria-expanded="false">Selling</a>
-                    <ul class="collapse list-unstyled" id="sellingSubmenu">
-                        <li><a href="#" v-on:click="searchAuctions(myAuctionsYetToComplete)">Yet To Complete</a></li>
-                        <li><a href="#" v-on:click="searchAuctions(myFinishedWonAuctions)">Won</a></li>
-                        <li><a href="#" v-on:click="searchAuctions(myFinishedNonWonAuctions)">Not Sold</a></li>
-                    </ul></li>
-
                 </ul>
             </nav>
 
             <div id="content">
-                <nav class="navbar navbar-default" style="background-color: #00365e;">
-                    <div class="container-fluid">
+                <nav class="navbar navbar-default" style="background-color: #343a40!important; border-color: white;">
+                    <div class="container">
 
 
                         <div v-if="loggedInUserId">
                             <ul class="nav navbar-nav navbar-left">
-                                <li><a href="#" data-toggle="modal" data-target="#createAuctionModal">Create New Auction</a></li>
+                            <form class="form-inline">
+                                <button class="btn btn-outline-light" type="button" data-toggle="modal" data-target="#createAuctionModal">Create New Auction</button>
+                            </form>
                             </ul>
                         </div>
 
                         
                             <ul class="pagination justify-content-center">
-                                <li class="page-item"><a class="page-link" href="#" v-on:click="getPreviousAuctions()">Previous</a></li>
-                                <li class="page-item"><a class="page-link" href="#" v-on:click="getNextAuctions()">Next</a></li>
+                                <button class="btn btn-outline-light" type="button" v-on:click="getPreviousAuctions()">Previous</button>
+                                <button class="btn btn-outline-light" type="button" v-on:click="getNextAuctions()">Next</button>
                             </ul>
-                        
-                       
-
-                        <form class="nav navbar-nav navbar-right">
-                            <input v-model="searchedTitle" placeholder="Title"/>
-                            <input type="button" value="Go!" v-on:click="searchAuctionsOnTitle()">
-                        </form>
-
-                        Filter by category: <select class="nav navbar-nav navbar-right" id="filterCategorySelect">
-                            <option value="1">Apparel</option>
-                            <option value="2">Equipment</option>
-                            <option value="3">Vehicles</option>
-                            <option value="4">Property</option>
-                            <option value="5">Other</option>
-                        </select>
-                        <button class="nav navbar-nav navbar-right" type="button" v-on:click="filterAuctionsByCategory()">Go!</button>
+                            
+                          <form class="form-inline">
+                                <input class="form-control mr-sm-2" v-model="searchedTitle" type="search" placeholder="Search" aria-label="Search">
+                                <button class="btn btn-outline-light my-2 my-sm-0" type="button" v-on:click="searchAuctionsOnTitle()">Search</button>
+                            </form>
 
 
                     </div>
                 </nav>
-        
 
-
-            <br/><br/>
-            <br/>
+                <br/>
             
                 <div v-if="auctions.length != 0">
                         <div class="container">
                             <div class="card-columns">
                                 <div v-for="auction in auctions">
-                                    <div class="card border-primary">
-                                        <div class="col-sm-3">
-                                        <img class="card-img-top" :src="'http://localhost:4941/api/v1/auctions/' + auction.id + '/photos'" alt="" height=200 width=200>
+                                    <div class="card border-secondary">
+                                        <div class="col-md-14">
+                                        <div class="card header">
+                                            <h5 class="card-header">{{ auction.title }}</h5>
+                                        </div>
+                                        <img class="card-img-top" :src="'http://localhost:4941/api/v1/auctions/' + auction.id + '/photos'" alt="">
                                         
                                         <div class="card-body">
-                                            <h5 class="card-title">{{ auction.title }}</h5>
+                                            <div v-if="auction.startDateTime > Date.now()">
+                                                <h5 class="card-title"><font color="blue">Upcoming</font></h5>
+                                            </div>
+                                            <div v-else-if="auction.endDateTime < Date.now()">
+                                                <h5 class="card-title"><font color="red">Expired</font></h5>
+                                            </div>
+                                            <div v-else>
+                                                <h5 class="card-title"><font color="green">Active</font></h5>
+                                            </div>
+                                            <p class="card-text">Highest Bid: ${{ auction.currentBid }}</p>
                                             <p class="card-text">{{ auction.categoryTitle }}</p>
+                                            
               
                                         </div>
                                         <div class="card-footer">
                                             <router-link :to="{ name: 'auction', params: { auctionId: auction.id}}">
-                                                <button class="btn btn-primary">View</button>
+                                                <button class="btn btn-outline-secondary">View</button>
                                             </router-link>
                                         </div>
-                                        <br/>
                                         </div>
                                     </div>
                                 </div>
@@ -106,7 +130,7 @@
                         </div>
                         
                 </div>
-                <div v-else>
+                <div width=100% v-else style="padding-left: 20px">
                     <b>There are no auctions which match the searched criteria.</b>
                 </div>
 
@@ -127,46 +151,88 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <form id="createAuctionForm" v-on:submit="createAuction()">
-                                <h2>Details</h2>
-                                <font color="red">*</font><b>Title:</b> <input v-model="title" placeholder="title" type="text" required/>
-                                <br/>
-                                <font color="red">*</font><b>Description:</b> <input v-model="description" placeholder="descripton" type="text" required/>
-                                <br/>
-                                <font color="red">*</font><b>Category: </b>
-                                <select id="newAuctionCategorySelect">
+                            <form id="createAuctionForm" v-on:submit.prevent="createAuction()">
+
+                            <h2>Details</h2>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Title</span>
+                            </div>
+                            <input class="form-control" v-model="title" placeholder="" type="text" required/>
+                            </div>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Description</span>
+                            </div>
+                            <input class="form-control" v-model="description" placeholder="" type="text" required/>
+                            </div>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Category</span>
+                            </div>
+                                <select class="form-control" id="newAuctionCategorySelect">
                                     <option value=1>Apparel</option>
                                     <option value=2>Equipment</option>
                                     <option value=3>Vehicles</option>
                                     <option value=4>Property</option>
                                     <option value=5>Other</option>
                                 </select>
-                                <br/>
-                                <h2>Time</h2>
-                                <br/>
-                                <font color="red">*</font><b>Start Date Time:</b> <input id="startDateTimePicker" value="startDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
-                                <span class="validity"></span>
-                                <br/>
-                                <font color="red">*</font><b>End Date Time:</b> <input id="endDateTimePicker" value="endDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
-                                <span class="validity"></span>
-                                <br/>
-                                <h2>Bidding Information</h2>
-                                <font color="red">*</font><b>Reserve Price:</b> $<input v-model.number="reservePrice" placeholder="0" type="number" required/>
-                                <br/>
-                                <font color="red">*</font><b>Starting Bid:</b> $<input v-model.number="startingBid" placeholder="0" type="number" required/>
-                                <h2>Photo</h2>
-                                Choose photo to upload: 
-                                <input id="photoUploadFile" name="photoUploadFile" type="file" style="float:right" accept=".jpg, .jpeg, .png">
-                                <div id="uploadAuctionPhotoDiv">
-                                    
-                                </div>
+                            </div>
+
+                            <h2>Time</h2>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Start Date Time</span>
+                            </div>
+                            <input class="form-control" id="startDateTimePicker" value="startDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
+                            <span class="validity"></span>
+                            </div>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>End Date Time</span>
+                                
+                            </div>
+                            <input class="form-control" id="endDateTimePicker" value="endDateTime" type="datetime-local" min="1970-06-01T08:30" max="2025-06-30T16:30" required/>
+                            <span class="validity"></span>
+                            </div>
+                                
+                            <h2>Bidding Information</h2>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Reserve Price $</span>
+                            </div>
+                            <input class="form-control" v-model.number="reservePrice" placeholder="0" type="number" required/>
+                            </div>
+
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Starting Bid $</span>
+                            </div>
+                            
+                            <input class="form-control" v-model.number="startingBid" placeholder="0" type="number" required/>
+                            </div>
+
+                            <h2>Photo</h2>
+                            <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="basic-addon1"><font color="red">*</font>Upload a Photo</span>
+                            </div>
+                            <input class="form-control" id="photoUploadFile" name="photoUploadFile" type="file" style="float:right" accept=".jpg, .jpeg, .png">
+                            </div>
+                            <div id="uploadAuctionPhotoDiv"></div>
                             </form>
-                            <div v-if="invalidCreationInput">
+                            <div class="alert alert-danger" role="alert" v-if="invalidCreationInput">
                                 <font color="red">* {{ this.invalidCreationString }}</font>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary" form="createAuctionForm" >
+                            <button type="submit" class="btn btn-outline-secondary" form="createAuctionForm" >
                                 Create New Auction
                             </button>
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">
@@ -215,7 +281,8 @@
                 myFinishedNonWonAuctions: "",
 
                 loggedInUserId: parseInt(localStorage.getItem("user_id")),
-                startIndex: 0
+                startIndex: 0,
+                searchCriteria: ""
 
 
                 
@@ -225,7 +292,8 @@
             
             this.getAuctions();
             this.auctionsIHaveBidOn = "bidder=" + parseInt(localStorage.getItem("user_id")) + "&status=active";
-            this.myAuctionsYetToComplete = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=active";
+            this.myAuctionsYetToComplete = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=upcoming";
+            this.myActiveAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=active";
             this.myFinishedWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=won";
             this.myFinishedNonWonAuctions = "seller=" + parseInt(localStorage.getItem("user_id")) + "&status=expired";
             document.getElementById("photoUploadFile").addEventListener('change', this.updateImageDisplay);
@@ -242,8 +310,8 @@
         methods: {
 
             getNextAuctions: function() {
-                if(this.auctions.length == 8) {
-                    this.startIndex += 8;
+                if(this.auctions.length == 9) {
+                    this.startIndex += 9;
                     this.getAuctions();
                 }
                
@@ -251,7 +319,7 @@
             },
 
             getPreviousAuctions: function() {
-                this.startIndex -= 8;
+                this.startIndex -= 9;
                 if(this.startIndex < 0) {
                     this.startIndex = 0;
                 }
@@ -269,13 +337,16 @@
                 }
 
                 var img = document.createElement("img");
+                img.height = 300;
+                img.width = 466;
                 img.src = window.URL.createObjectURL(files[0]);
                 photoDiv.appendChild(img);
 
             },
 
             getAuctions: function() {
-                this.$http.get('http://localhost:4941/api/v1/auctions?startIndex=' + this.startIndex +'&count=8')
+                this.searchCriteria = "";
+                this.$http.get('http://localhost:4941/api/v1/auctions?startIndex=' + this.startIndex +'&count=9')
                 .then(function(response) {
                     this.auctions = response.data;
                     
@@ -331,7 +402,6 @@
                     }), 
                     {headers: {'X-Authorization': localStorage.getItem("token")}})
                     .then(function(response) {
-                        $('#createAuctionModal').modal('hide');
                         this.title = "";
                         this.description = "";
                         this.startDateTime = "";
@@ -366,8 +436,28 @@
 
             },
 
-            searchAuctions: function(searchQuery) {
-                console.log(searchQuery);
+            searchAuctions: function(searchQuery, type) {
+                
+
+                switch(type) {
+                    case 'Bid On':
+                        this.searchCriteria = "→ Buying: Bid On";
+                        break;
+                    case 'Active':
+                        this.searchCriteria = "→ Selling: Active";
+                        break;
+                    case 'Upcoming':
+                        this.searchCriteria = "→ Selling: Upcoming";
+                        break;
+                    case 'Sold':
+                        this.searchCriteria = "→ Selling: Sold";
+                        break;
+                    case 'Not Sold':
+                        this.searchCriteria = "→ Selling: Not Sold";
+                        break;
+
+                }
+
                 this.$http.get('http://localhost:4941/api/v1/auctions?' + searchQuery)
                 .then(function(response) {
                     if(response.data.length > 0) {
@@ -383,6 +473,7 @@
             },
 
             searchWonAuctions: function() {
+                this.searchCriteria = "→ Buying: Won";
                 this.$http.get('http://localhost:4941/api/v1/my_won_auctions',
                 {headers: {'X-Authorization': localStorage.getItem("token")}})
                 .then(function(response) {
@@ -399,6 +490,7 @@
             },
 
             searchAuctionsOnTitle: function() {
+                this.searchCriteria = "→ Search: " + this.searchedTitle;
                 this.$http.get('http://localhost:4941/api/v1/auctions?q=' + this.searchedTitle)
                 .then(function(response) {
                      this.auctions = response.data;
@@ -408,9 +500,25 @@
                 });
             },
 
-            filterAuctionsByCategory: function() {
-                var e = document.getElementById("filterCategorySelect");
-                this.categorySelected = e.options[e.selectedIndex].value;
+            filterAuctionsByCategory: function(categorySelected) {
+                switch(categorySelected) {
+                    case 1:
+                        this.searchCriteria = "→ Filter: Apparel";
+                        break;
+                    case 2:
+                        this.searchCriteria = "→ Filter: Equipment";
+                        break;
+                    case 3:
+                        this.searchCriteria = "→ Filter: Vehicles";
+                        break;
+                    case 4:
+                        this.searchCriteria = "→ Filter: Property";
+                        break;
+                    case 5:
+                        this.searchCriteria = "→ Filter: Other";
+                        break;
+                }
+                this.categorySelected = categorySelected;
                 if(this.searchedTitle !== "") {
                     this.$http.get('http://localhost:4941/api/v1/auctions?q=' + this.searchedTitle + '&category-id=' + this.categorySelected)
                     .then(function(response) {
@@ -443,6 +551,14 @@
     display: flex;
     align-items: stretch;
 }
+
+.navbar
+{
+  min-width: 1200px;
+  width: 1200px; 
+
+}
+
 
 #sidebar {
     min-width: 250px;
@@ -515,7 +631,7 @@ a, a:hover, a:focus {
 
 #sidebar ul.components {
     padding: 20px 0;
-    border-bottom: 1px solid #47748b;
+    border-bottom: 1px solid #747474;
 }
 
 #sidebar ul p {
@@ -541,6 +657,10 @@ ul ul a {
     font-size: 0.9em !important;
     padding-left: 30px !important;
     background: #747474;
+}
+
+.card-footer{
+    text-align: center;
 }
 
 
